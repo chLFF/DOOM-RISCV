@@ -148,7 +148,9 @@ int filelength (int handle)
 }
 
 
-
+/*
+Open and read wad into lumpinfo.
+*/
 void openwad(char* wadname)
 {
 
@@ -171,6 +173,12 @@ void openwad(char* wadname)
     if (strncmp(header.identification, "IWAD", 4))
 	derror("wadfile has weirdo header");
 
+    /*
+    wad = header + numlumps * filelump
+    lumpinfo[x] = header + filelump[x]
+    We load filelumps (filetable) first and split them into lumpinfo.
+    lumpinfo and filetable use the same chunk for less mem use.
+    */
     numlumps = LONG(header.numlumps);
     tableoffset = LONG(header.infotableofs);
     tablelength = numlumps * sizeof(lumpinfo_t);
@@ -194,6 +202,10 @@ void openwad(char* wadname)
 
 }
 
+/*
+Load sfx according to lumpname in lumpinfo.
+Return sfx pointer and set load size.
+*/
 void*
 loadlump
 ( char*		lumpname,
@@ -227,6 +239,11 @@ loadlump
 
 }
 
+/*
+Load sfx with name and pad sfx file with 128
+to match sample size (n * SAMPLECOUNT).
+Return header stripped (8Bytes) sfx.
+*/
 void*
 getsfx
 ( char*		sfxname,
@@ -247,6 +264,8 @@ getsfx
     // pad the sound effect out to the mixing buffer size
     paddedsize = ((size-8 + (SAMPLECOUNT-1)) / SAMPLECOUNT) * SAMPLECOUNT;
     paddedsfx = (unsigned char *) realloc(sfx, paddedsize+8);
+
+    /* [RVV] */
     for (i=size ; i<paddedsize+8 ; i++)
 	paddedsfx[i] = 128;
 

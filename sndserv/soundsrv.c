@@ -50,7 +50,7 @@ static const char rcsid[] = "$Id: soundsrv.c,v 1.3 1997/01/29 22:40:44 b1 Exp $"
 #include <malloc.h>
 #include <sys/stat.h>
 #include <sys/time.h>
-
+#include <string.h>
 #include "sounds.h"
 #include "soundsrv.h"
 #include "wadread.h"
@@ -299,7 +299,9 @@ int mix(void)
 }
 
 
-
+/*
+Open .wad and load data into S_sfx.
+*/
 void
 grabdata
 ( int		c,
@@ -354,6 +356,7 @@ grabdata
     numsounds = NUMSFX;
     longsound = 0;
 
+	/* Try to open wad, we only need one of doom*.wad. */
     if (! access(doom2fwad, R_OK) )
 	name = doom2fwad;
     else if (! access(doom2wad, R_OK) )
@@ -384,6 +387,7 @@ grabdata
 	if (!S_sfx[i].link)
 	{
 	    S_sfx[i].data = getsfx(S_sfx[i].name, &lengths[i]);
+		/* Record the length of longest sound. */
 	    if (longsound < lengths[i]) longsound = lengths[i];
 	} else {
 	    S_sfx[i].data = S_sfx[i].link->data;
@@ -534,6 +538,11 @@ void outputushort(int num)
     }
 }
 
+/*
+Clear up channels.
+Get time.
+Make table steptablemid and vol_lookup.
+*/
 void initdata(void)
 {
 
@@ -542,6 +551,7 @@ void initdata(void)
     
     int*	steptablemid = steptable + 128;
 
+	/* [RVV] */
     for (i=0 ;
 	 i<sizeof(channels)/sizeof(unsigned char *) ;
 	 i++)
@@ -551,6 +561,7 @@ void initdata(void)
     
     gettimeofday(&last, &whocares);
 
+	/* [RVV] */
     for (i=-128 ; i<128 ; i++)
 	steptablemid[i] = pow(2.0, (i/64.0))*65536.0;
 
@@ -561,6 +572,7 @@ void initdata(void)
     // for (j=0 ; j<256 ; j++)
     // vol_lookup[i*256+j] = (i*(j-128))/127;
     
+	/* [RVV] */
     for (i=0 ; i<128 ; i++)
 	for (j=0 ; j<256 ; j++)
 	    vol_lookup[i*256+j] = (i*(j-128)*256)/127;
